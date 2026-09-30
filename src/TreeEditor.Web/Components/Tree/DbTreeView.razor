@@ -1,0 +1,43 @@
+<ul class="tree" role="@TreeRole">
+    @foreach (var item in Items)
+    {
+        var node = item.Node;
+
+        <li role="treeitem" aria-selected="@(IsSelected(item) ? "true" : "false")" aria-expanded="@AriaExpanded(item)">
+            <div class="@RowClass(item)"
+                 @onclick="() => OnSelect.InvokeAsync(item)"
+                 @ondblclick="() => OnActivate.InvokeAsync(item)"
+                 title="Double-click to load into the cache">
+                @if (node.HasChildren)
+                {
+                    <button type="button" class="toggle" aria-label="@(item.IsExpanded ? "Collapse" : "Expand")"
+                            @onclick="() => OnToggle.InvokeAsync(item)" @onclick:stopPropagation>
+                        @(item.IsExpanded ? "▾" : "▸")
+                    </button>
+                }
+                else
+                {
+                    <span class="toggle"></span>
+                }
+
+                <span class="value">@node.Value</span>
+                <span class="node-id">#@node.Id</span>
+
+                @if (IsCached(node.Id))
+                {
+                    <span class="tag tag-cached">cached</span>
+                }
+                @if (node.IsDeleted)
+                {
+                    <span class="tag tag-deleted">deleted</span>
+                }
+            </div>
+
+            @if (item.IsExpanded && item.Children is { Count: > 0 })
+            {
+                <DbTreeView Items="item.Children" SelectedId="SelectedId" IsCached="IsCached" IsTopLevel="false"
+                            OnSelect="OnSelect" OnToggle="OnToggle" OnActivate="OnActivate" />
+            }
+        </li>
+    }
+</ul>

@@ -1,0 +1,46 @@
+@using TreeEditor.Core.Constants
+
+<ul class="tree" role="@TreeRole">
+    @foreach (var node in Nodes)
+    {
+        var children = Cache.GetChildren(node);
+        var hasChildren = children.Count > 0;
+
+        <li role="treeitem" aria-selected="@(IsSelected(node) ? "true" : "false")">
+            <div class="@RowClass(node)"
+                 @onclick="() => OnSelect.InvokeAsync(node)"
+                 @ondblclick="() => OnActivate.InvokeAsync(node)">
+                <span class="toggle">@(hasChildren ? "▾" : "")</span>
+
+                @if (IsEditing(node))
+                {
+                    <input class="edit-input" @ref="_input" @bind="Edit.Value" @bind:event="oninput"
+                           maxlength="@TreeConstants.MaxValueLength" aria-label="Element value"
+                           @onkeydown="HandleKeyDown" @onclick:stopPropagation />
+                    <button type="button" class="icon-btn" title="Save (Enter)" @onclick="OnCommit" @onclick:stopPropagation>✓</button>
+                    <button type="button" class="icon-btn" title="Cancel (Esc)" @onclick="OnCancel" @onclick:stopPropagation>✕</button>
+                }
+                else
+                {
+                    <span class="value">@node.Value</span>
+                    <span class="node-id">@IdLabel(node)</span>
+
+                    @if (node.IsModified)
+                    {
+                        <span class="tag tag-modified" title="Was: @node.OriginalValue">edited</span>
+                    }
+                    @if (node.IsDeleted)
+                    {
+                        <span class="tag tag-deleted">@DeletedLabel(node)</span>
+                    }
+                }
+            </div>
+
+            @if (hasChildren)
+            {
+                <CachedTreeView Cache="Cache" Nodes="children" SelectedKey="SelectedKey" Edit="Edit" IsTopLevel="false"
+                                OnSelect="OnSelect" OnActivate="OnActivate" OnCommit="OnCommit" OnCancel="OnCancel" />
+            }
+        </li>
+    }
+</ul>

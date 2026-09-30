@@ -1,0 +1,76 @@
+@page "/"
+@using TreeEditor.Web.Components.Tree
+
+<PageTitle>Tree Editor</PageTitle>
+
+<header class="app-header">
+    <h1>Tree Editor</h1>
+    <button type="button" class="btn btn-danger" disabled="@_busy" @onclick="ResetAsync"
+            title="Restore the database and the cache to the initial sample data">
+        Reset
+    </button>
+</header>
+
+<main class="workspace">
+    <section class="panel" aria-labelledby="db-title">
+        <div class="panel-header">
+            <h2 id="db-title">Database</h2>
+            <span class="hint">Expand to browse · double-click to load</span>
+        </div>
+        <div class="panel-body">
+            @if (DbTree.Roots is null)
+            {
+                <p class="empty">Loading…</p>
+            }
+            else if (DbTree.Roots.Count == 0)
+            {
+                <p class="empty">The database is empty.</p>
+            }
+            else
+            {
+                <DbTreeView Items="DbTree.Roots" SelectedId="DbTree.SelectedId" IsCached="Cache.Contains"
+                            OnSelect="DbTree.Select" OnToggle="ToggleDbAsync" OnActivate="LoadAsync" />
+            }
+        </div>
+    </section>
+
+    <div class="transfer">
+        <button type="button" class="btn btn-primary" disabled="@(!CanLoad)"
+                @onclick="LoadSelectedAsync" title="Load the selected element into the cache">
+            <span class="arrow" aria-hidden="true">→</span>
+            Load
+        </button>
+    </div>
+
+    <section class="panel" aria-labelledby="cache-title">
+        <div class="panel-header">
+            <h2 id="cache-title">Cache</h2>
+            @if (_pending.Count > 0)
+            {
+                <span class="hint">@_pending.Summary pending</span>
+            }
+        </div>
+        <div class="toolbar">
+            <button type="button" class="btn" disabled="@(!CanEditSelected)" @onclick="AddChild">Add child</button>
+            <button type="button" class="btn" disabled="@(!CanEditSelected)" @onclick="StartEdit">Edit</button>
+            <button type="button" class="btn" disabled="@(!CanEditSelected)" @onclick="Delete">Delete</button>
+            <span class="toolbar-spacer"></span>
+            <button type="button" class="btn btn-primary" disabled="@(!CanApply)" @onclick="ApplyAsync">@ApplyLabel</button>
+        </div>
+        <div class="panel-body">
+            @if (Cache.Nodes.Count == 0)
+            {
+                <p class="empty">Nothing cached yet. Select an element in the database tree and click <strong>Load</strong>.</p>
+            }
+            else
+            {
+                <CachedTreeView Cache="Cache" Nodes="Cache.GetRoots()" SelectedKey="_selectedCacheKey" Edit="_edit"
+                                OnSelect="SelectCached" OnActivate="ActivateCached" OnCommit="CommitEdit" OnCancel="CancelEdit" />
+            }
+        </div>
+    </section>
+</main>
+
+<footer class="status @(_statusIsError ? "error" : null)" role="status" aria-live="polite">
+    @(_status ?? "Ready.")
+</footer>

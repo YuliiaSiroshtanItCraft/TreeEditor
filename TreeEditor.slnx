@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TreeEditor.AppHost/TreeEditor.AppHost.csproj" />
+    <Project Path="src/TreeEditor.Core/TreeEditor.Core.csproj" />
+    <Project Path="src/TreeEditor.Web/TreeEditor.Web.csproj" />
+  </Folder>
+</Solution>
